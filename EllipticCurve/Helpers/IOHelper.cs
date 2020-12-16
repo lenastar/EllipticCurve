@@ -5,30 +5,40 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using EllipticCurve.Enums;
 using EllipticCurve.Models;
+using Integer = System.Numerics.BigInteger;
 
 namespace EllipticCurve.Helpers
 {
     public static class IoHelper
     {
-        private const string AddPattern = "\\((.*), (.*)\\) \\((.*), (.*)\\)";
-        private const string MulPattern = "\\((.*), (.*)\\) (.*)";
+        private const string AddPattern = "\\((.*)\\s*,\\s*(.*)\\) \\((.*)\\s*,\\s*(.*)\\)";
+        private const string MulPattern = "\\((.*)\\s*,\\s*(.*)\\)\\s*(.*)";
 
         public static void Print(string outputDir, string fileName, string text)
         {
             var path = $"{outputDir}\\{fileName}";
 
             using var sw = new StreamWriter(path);
-            sw.WriteAsync(text);
+            sw.Write(text);
         }
-        public static string FormatAdd<T>(Point<T> left, Point<T> right, Point<T> result)
+        public static string FormatAdd<T>(Point<T> left, Point<T> right, Point<T> result, Func<T, NumericSystem, string> toString)
         {
-            return $"{left} + {right} = {result}";
+            var leftF = $"({toString(left.X, left.NumericSystemX)}, {toString(left.Y, left.NumericSystemY)})";
+            var rightF = $"({toString(right.X, right.NumericSystemX)}, {toString(right.Y, right.NumericSystemY)})";
+            var resultF = $"({toString(result.X, left.NumericSystemX & right.NumericSystemX)}, {toString(result.Y, left.NumericSystemY & right.NumericSystemY)})";
+            
+            return $"{leftF} + {rightF} = {resultF}";
         }
         
-        public static string FormatMul<T>(Point<T> left, BigInteger k, Point<T> result)
+        public static string FormatMul<T>(Point<T> left, string k, Point<T> result, Func<T, NumericSystem, string> 
+        toString)
         {
-            return $"{left} * {k} = {result}";
+            var leftF = $"({toString(left.X, left.NumericSystemX)}, {toString(left.Y, left.NumericSystemY)})";
+            var resultF = $"({toString(result.X, left.NumericSystemX)}, {toString(result.Y, left.NumericSystemY)})";
+
+            return $"{leftF} * {k} = {resultF}";
         }
 
         public static List<string> GetAddParams(string text)
@@ -68,13 +78,24 @@ namespace EllipticCurve.Helpers
             return matched
                 .Groups
                 .Values
-                .Select(x => ChangeNotation(x.Value))
+                .Select(x => x.Value.Trim())
                 .ToList();
         }
 
-        private static string ChangeNotation(string str)
+        public static (string Changed, NumericSystem BaseSystem) ChangeNotationToDecimalWithBaseSystem(string str)
         {
-            return str.StartsWith("0x") ? BigInteger.Parse(str[Range.StartAt(2)], NumberStyles.HexNumber).ToString() : str;
+            if (str.StartsWith("0x"))
+            {
+                return (BigInteger.Parse("0" + str[Range.StartAt(2)], NumberStyles.HexNumber).ToString(), NumericSystem.Hex);
+            }
+
+            return (str, NumericSystem.Decimal);
+        }
+        
+        public static string ChangeNotationToDecimal(string str)
+        {
+            var (changed, _) = ChangeNotationToDecimalWithBaseSystem(str);
+            return changed;
         }
     }
 }

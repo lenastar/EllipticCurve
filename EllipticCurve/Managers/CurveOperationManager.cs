@@ -1,6 +1,6 @@
-﻿using System.Numerics;
-using EllipticCurve.Interfaces;
+﻿using EllipticCurve.Interfaces;
 using EllipticCurve.Models;
+using Integer = System.Numerics.BigInteger;
 
 namespace EllipticCurve.Managers
 {
@@ -26,7 +26,7 @@ namespace EllipticCurve.Managers
             return false;
         }
 
-        public Point<T> Multiple(Point<T> first, BigInteger k)
+        public Point<T> Multiple(Point<T> first, Integer k)
         {
             var result = Point<T>.Infinity;
             var addend = first;

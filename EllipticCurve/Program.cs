@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 
@@ -8,18 +8,26 @@ namespace EllipticCurve
 {
     public static class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
-            var inputDir = args[0];
-            var inputFileNames = Directory.GetFiles(inputDir);
-            var outputDir = args[1];
+            var inputDir = "./inputs";
+            var outputDir = "./outputs";
 
-            foreach (var fileName in inputFileNames)
-            { 
-                ThreadPool.QueueUserWorkItem(x => TaskManager.RunFileTasks(fileName, inputDir, outputDir));
+            var inputFileNames = Directory.GetFiles(inputDir);
+
+            var threads = inputFileNames
+                .Select(fileName => new Thread(x => TaskManager.RunFileTasks(fileName, inputDir, outputDir)))
+                .ToArray();
+            
+            foreach (var thread in threads)
+            {
+                thread.Start();
             }
 
-            Console.WriteLine($"Результаты находятся в папке: {outputDir}");
+            foreach (var thread in threads)
+            {
+                thread.Join();
+            }
         }
     }
 }

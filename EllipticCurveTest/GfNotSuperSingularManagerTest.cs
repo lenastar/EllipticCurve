@@ -1,7 +1,9 @@
-﻿using EllipticCurve.Managers;
+﻿using EllipticCurve.Helpers;
+using EllipticCurve.Managers;
 using EllipticCurve.Models;
 using ExtendedArithmetic;
 using NUnit.Framework;
+using Integer = System.Numerics.BigInteger;
 
 namespace EllipticCurveTest
 {
@@ -58,22 +60,25 @@ namespace EllipticCurveTest
         }
         
         [Test]
-        [TestCase("4373527398576640063579304354969275615843559206632", "3705292482178961271312284701371585420180764402649", 2, "1", "1")]
-        public void TestFipsMul(string x, string y, int t, string resX, string resY)
+        [TestCase("4373527398576640063579304354969275615843559206632", "3705292482178961271312284701371585420180764402649", "2", "0xcb5ca2738fe300aacfb00b42a77b828d8a5c41eb", "0x229c79e9ab85f90acd3d5fa3a696664515efefa6b")]
+        [TestCase("4373527398576640063579304354969275615843559206632", "3705292482178961271312284701371585420180764402649", 
+        "5846006549323611672814741753598448348329118574063", null, null )]
+        public void TestFipsMul(string x, string y, string t, string resX, string resY)
         {
             var k = 163;
             var a = Polynomial.Parse("1");
             var b = Polynomial.Parse("1");
             var c = Polynomial.Parse("1");
-            var xPol = Polynomial.Parse(x);
-            var yPol = Polynomial.Parse(y);
+            var xPol = PolynomialExtensions.Parse(x);
+            var yPol = PolynomialExtensions.Parse(y);
             var left = new Point<Polynomial>(xPol, yPol);
 
+            var m = Integer.Parse(t);
             var manager = new GfCurveNotSuperSingularManager(k, a, b, c);
-            var result = manager.Multiple(left, t);
+            var result = manager.Multiple(left, m);
             
-            var resXPol = Polynomial.Parse(resX);
-            var resYPol = Polynomial.Parse(resY);
+            var resXPol = resX != null ? PolynomialExtensions.Parse(resX) : null;
+            var resYPol = resY != null ? PolynomialExtensions.Parse(resY) : null;
             var expectedResult = new Point<Polynomial>(resXPol, resYPol);
             
             Assert.AreEqual(expectedResult, result);

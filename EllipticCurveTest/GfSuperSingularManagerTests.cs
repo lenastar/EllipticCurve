@@ -10,7 +10,7 @@ namespace EllipticCurveTest
         [Test]
         [TestCase("x^3", "x", 0, null, null)]
         [TestCase("x^3", "x", 1, "x^3", "x")]
-        [TestCase("x + x^2", "1", 2, "0", "1 + x + x^2")]
+        [TestCase("x + x^2", "1", 2, "1 + x + x^2", "x + x^2")]
         public void TestMul(string x, string y, int t, string resX, string resY)
         {
             var k = 4;
@@ -31,8 +31,8 @@ namespace EllipticCurveTest
         }
         
         [Test]
-        [TestCase("x + x^2", "1", "x + x^2", "1", "0", "1 + x + x^2")]
-        [TestCase("1", "x + x^2", "x + x^2", "1 + x + x^2", "x + x^2 + 1", "0")]
+        [TestCase("x + x^2", "1", "x + x^2", "1", "1 + x + x^2", "x + x^2")]
+        [TestCase("1", "x + x^2", "x + x^2", "1 + x + x^2", "0", "1")]
         [TestCase("x + x^2", "x + x^2", "x + x^2", "1 + x + x^2", null, null)]
         public void TestAdd(string x1, string y1, string x2, string y2, string resX, string resY)
         {

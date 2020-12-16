@@ -12,11 +12,10 @@ namespace EllipticCurveTest
         public void TestInvert(string pol, string inverted)
         {
             var k = Polynomial.Parse("x^4 + x + 1");
-            var manager = new GfFieldHelper(k);
             var polynomial = Polynomial.Parse(pol);
             var expectedResult = Polynomial.Parse(inverted);
 
-            var result = manager.Invert(polynomial);
+            var result = polynomial.Invert(k);
             
             Assert.AreEqual(expectedResult, result);
         }

@@ -6,19 +6,17 @@ namespace EllipticCurve.Managers
 {
     public class GfCurveSuperSingularManager  : CurveOperationManager<Polynomial>
     {
-        private readonly GfFieldHelper _gfFieldHelper;
         private readonly Polynomial _k;
         private readonly Polynomial _a;
         private readonly Polynomial _b;
         private readonly Polynomial _c;
 
-        public GfCurveSuperSingularManager(long order, Polynomial a, Polynomial b, Polynomial c)
+        public GfCurveSuperSingularManager(long order, Polynomial a, Polynomial b, Polynomial c) 
         {
-            _k = Polynomial.Parse(GfFieldHelper.IrreduciblePolynomials[order]);
+            _k = Polynomial.Parse(PolynomialExtensions.IrreduciblePolynomials[order]);
             _a = a;
             _b = b;
             _c = c;
-            _gfFieldHelper = new GfFieldHelper(_k);
         }
 
         public override Point<Polynomial> Add(Point<Polynomial> first, Point<Polynomial> second)
@@ -32,26 +30,29 @@ namespace EllipticCurve.Managers
             
             if (first.X.Equals(second.X))
             {
-                if (second.Y.Equals(_a.Add(first.Y)))
+                if (second.Y.Equals(_a.Add(first.Y).Mod(_k)))
                 {
                     return Point<Polynomial>.Infinity;
                 }
 
+                var inverted = _a.Invert(_k);
+
                 coefficient = Polynomial.Square(first.X)
                     .Add(_b)
-                    .Multiply(_gfFieldHelper.Invert(_a))
+                    .Multiply(inverted)
                     .Mod(_k);
             }
             else
             {
+                var inverted = first.X.Add(second.X).Invert(_k);
                 coefficient = first.Y
                     .Add(second.Y)
-                    .Multiply(_gfFieldHelper.Invert(first.X.Add(second.X)))
+                    .Multiply(inverted)
                     .Mod(_k);
             }
 
             var x3 = Polynomial
-                .Sum(Polynomial.Square(coefficient), _a.Multiply(coefficient), _b, first.X, second.X)
+                .Sum(Polynomial.Square(coefficient), first.X, second.X)
                 .Mod(_k);
             
             // из уравнения секущей

@@ -6,7 +6,6 @@ namespace EllipticCurve.Managers
 {
     public class GfCurveNotSuperSingularManager : CurveOperationManager<Polynomial>
     {
-        private readonly GfFieldHelper _gfFieldHelper;
         private readonly Polynomial _k;
         private readonly Polynomial _a;
         private readonly Polynomial _b;
@@ -14,11 +13,10 @@ namespace EllipticCurve.Managers
         
         public GfCurveNotSuperSingularManager(long order, Polynomial a, Polynomial b, Polynomial c)
         {
-            _k = Polynomial.Parse(GfFieldHelper.IrreduciblePolynomials[order]);
+            _k = Polynomial.Parse(PolynomialExtensions.IrreduciblePolynomials[order]);
             _a = a;
             _b = b;
             _c = c;
-            _gfFieldHelper = new GfFieldHelper(_k);
         }
 
         public override Point<Polynomial> Add(Point<Polynomial> first, Point<Polynomial> second)
@@ -30,22 +28,23 @@ namespace EllipticCurve.Managers
 
             Polynomial multiplier, inverted;
 
-            if (first.X.Equals(second.X))
+            if (first.X.Equals(second.X.Mod(_k)))
             {
-                if (second.Y.Equals(_a.Multiply(first.X).Add(first.Y)))
+                if (second.Y.Equals(_a.Multiply(first.X).Add(first.Y).Mod(_k)))
                 {
                     return Point<Polynomial>.Infinity;
                 }
 
-                inverted = _gfFieldHelper.Invert(_a.Multiply(first.X));
+                inverted = _a.Multiply(first.X).Invert(_k);
                 multiplier = Polynomial
                     .Square(first.X)
-                    .Add(_a.Multiply(first.Y));
+                    .Add(_a.Multiply(first.Y))
+                    .Mod(_k);
             }
             else
             {
-                inverted = _gfFieldHelper.Invert(first.X.Add(second.X));
-                multiplier = first.Y.Add(second.Y);
+                inverted =  first.X.Add(second.X).Invert(_k);
+                multiplier = first.Y.Add(second.Y).Mod(_k);
             }
 
             var coefficient = multiplier.Multiply(inverted).Mod(_k);
